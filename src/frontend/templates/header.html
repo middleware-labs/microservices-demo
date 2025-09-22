@@ -40,7 +40,11 @@
         tracePropagationTargets: [/.*/],
         defaultAttributes: {
             "app.version": "1.0.0",
+            "automation.source": "cronjob" // Add identifier for automated sessions
         },
+        // Force session recording even for automated browsers
+        allowBots: true,
+        sessionSampleRate: 1.0 // Record all sessions
         })
     }
     </script>

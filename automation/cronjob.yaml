@@ -1,0 +1,125 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: middleware-session-generator
+  labels:
+    app: middleware-session-generator
+    component: automation
+spec:
+  # Run daily at 2:00 AM UTC (adjust timezone as needed)
+  schedule: "0 2 * * *"
+  
+  # Keep the last 3 successful jobs and 1 failed job for debugging
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  
+  # Don't start a new job if the previous one is still running
+  concurrencyPolicy: Forbid
+  
+  # Keep trying for up to 10 minutes if the job fails
+  startingDeadlineSeconds: 600
+  
+  jobTemplate:
+    spec:
+      # Don't restart the pod if it fails
+      backoffLimit: 2
+      
+      # Clean up completed jobs after 24 hours
+      ttlSecondsAfterFinished: 86400
+      
+      template:
+        metadata:
+          labels:
+            app: middleware-session-generator
+            component: automation
+        spec:
+          restartPolicy: Never
+          
+          # Use the same service account as frontend for consistency
+          serviceAccountName: middleware-automation
+          
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+          
+          # Add a timeout to prevent hanging jobs
+          # Playwright should complete within 5 minutes
+          activeDeadlineSeconds: 300
+          
+          containers:
+          - name: automation
+            image: ghcr.io/middleware-labs/middleware-session-generator:latest
+            imagePullPolicy: Always
+            
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+              privileged: false
+              readOnlyRootFilesystem: false
+            
+            env:
+            - name: FRONTEND_URL
+              value: "http://frontend:80"
+            - name: NODE_ENV
+              value: "production"
+            - name: LOG_LEVEL
+              value: "info"
+            
+            resources:
+              requests:
+                cpu: 100m
+                memory: 256Mi
+                ephemeral-storage: 100Mi
+              limits:
+                cpu: 500m
+                memory: 512Mi
+                ephemeral-storage: 200Mi
+            
+            # Add volume for temporary files (screenshots, etc.)
+            volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          
+          volumes:
+          - name: tmp
+            emptyDir:
+              sizeLimit: 100Mi
+---
+# Optional: Create a separate service account if you prefer
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: middleware-automation
+  labels:
+    app: middleware-session-generator
+---
+# Optional: RBAC permissions if needed (minimal permissions)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: middleware-automation
+  labels:
+    app: middleware-session-generator
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: middleware-automation
+  labels:
+    app: middleware-session-generator
+subjects:
+- kind: ServiceAccount
+  name: middleware-automation
+  namespace: default
+roleRef:
+  kind: Role
+  name: middleware-automation
+  apiGroup: rbac.authorization.k8s.io

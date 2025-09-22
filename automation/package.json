@@ -1,0 +1,16 @@
+{
+  "name": "frontend-automation",
+  "version": "1.0.0",
+  "description": "Automated session generator for Middleware monitoring",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node index.js"
+  },
+  "dependencies": {
+    "playwright": "1.55.0"
+  },
+  "devDependencies": {},
+  "author": "",
+  "license": "ISC"
+}
