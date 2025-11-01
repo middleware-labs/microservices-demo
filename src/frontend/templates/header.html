@@ -38,10 +38,36 @@
         accountKey:"evlumlmmbohveyohtyligqhidwmghfsigqou",
         target: "https://sandbox.middleware.io",
         tracePropagationTargets: [/.*/],
-        defaultAttributes: {
-            "app.version": "1.0.0",
-            "automation.source": "cronjob" // Add identifier for automated sessions
-        },
+            // Persist dummy user info for the browser session
+            defaultAttributes: (() => {
+                const dummySets = [
+                    { name: "Archish", email: "archish@middleware.io", user_type: "developer" },
+                    { name: "Keval", email: "keval@middleware.io", user_type: "developer" },
+                    { name: "Naman Jain", email: "naman.jain@middleware.io", user_type: "devops" },
+                    { name: "Malay", email: "malay@middleware.io", user_type: "sales" },
+                    { name: "Sanjay", email: "sanjay@middleware.io", user_type: "developer" }
+                ];
+                let selected = null;
+                try {
+                    const stored = sessionStorage.getItem('dummyUser');
+                    if (stored) {
+                        selected = JSON.parse(stored);
+                    } else {
+                        selected = dummySets[Math.floor(Math.random() * dummySets.length)];
+                        sessionStorage.setItem('dummyUser', JSON.stringify(selected));
+                    }
+                } catch (e) {
+                    selected = dummySets[Math.floor(Math.random() * dummySets.length)];
+                }
+                return {
+                    "app.version": "1.0.0",
+                    "automation.source": "cronjob", // Add identifier for automated sessions
+                    name: selected.name,
+                    email: selected.email,
+                    "user_name": selected.name,
+                    user_type: selected.user_type,
+                };
+            })(),
         // Force session recording even for automated browsers
         allowBots: true,
         sessionSampleRate: 1.0 // Record all sessions
