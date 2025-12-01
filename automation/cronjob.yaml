@@ -63,7 +63,7 @@ spec:
             
             env:
             - name: FRONTEND_URL
-              value: "http://frontend:80"
+              value: "https://sandbox-frontend.mw.dev"
             - name: NODE_ENV
               value: "production"
             - name: LOG_LEVEL
