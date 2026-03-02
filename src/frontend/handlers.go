@@ -46,6 +46,7 @@ var (
 	frontendMessage  = strings.TrimSpace(os.Getenv("FRONTEND_MESSAGE"))
 	isCymbalBrand    = "true" == strings.ToLower(os.Getenv("CYMBAL_BRANDING"))
 	assistantEnabled = "true" == strings.ToLower(os.Getenv("ENABLE_ASSISTANT"))
+	allowDDRum       = "true" == strings.ToLower(os.Getenv("ALLOW_DD_RUM"))
 	templates        = template.Must(template.New("").
 				Funcs(template.FuncMap{
 			"renderMoney":        renderMoney,
@@ -557,6 +558,7 @@ func injectCommonTemplateData(r *http.Request, payload map[string]interface{}) m
 		"platform_name":     plat.provider,
 		"is_cymbal_brand":   isCymbalBrand,
 		"assistant_enabled": assistantEnabled,
+		"allow_dd_rum":      allowDDRum,
 		"deploymentDetails": deploymentDetailsMap,
 		"frontendMessage":   frontendMessage,
 		"currentYear":       time.Now().Year(),
