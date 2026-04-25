@@ -33,10 +33,10 @@
     <script>
     if (window.Middleware){
         Middleware.track({
-        serviceName:"Boutique",
-        projectName:"Boutique",
-        accountKey:"evlumlmmbohveyohtyligqhidwmghfsigqou",
-        target: "https://sandbox.middleware.io",
+        serviceName: "{{ $.mw_service_name }}",
+        projectName: "{{ $.mw_project_name }}",
+        accountKey: "{{ $.mw_account_key }}",
+        target: "{{ $.mw_target }}",
         tracePropagationTargets: [/.*/],
             // Persist dummy user info for the browser session
             defaultAttributes: (() => {
