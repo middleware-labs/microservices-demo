@@ -74,20 +74,20 @@
         })
     }
     </script>
-    {{ if $.allow_dd_rum }}
+    {{ if $.dd_rum_enabled }}
     <script>
         (function(h,o,u,n,d) {
           h=h[d]=h[d]||{q:[],onReady:function(c){h.q.push(c)}}
           d=o.createElement(u);d.async=1;d.src=n;d.crossOrigin=''
           n=o.getElementsByTagName(u)[0];n.parentNode.insertBefore(d,n)
-        })(window,document,'script','https://www.datadoghq-browser-agent.com/us1/v6/datadog-rum.js','DD_RUM')
+        })(window,document,'script','{{ $.dd_rum_script_url }}','DD_RUM')
         window.DD_RUM.onReady(function() {
           window.DD_RUM.init({
-            clientToken: 'pub886ff2959ffd158ee138b20139e44b93',
-            applicationId: '4690001b-550e-4ca0-8dc6-95bc534b4269',
-            site: 'datadoghq.com',
-            service: 'sandbox-boutique',
-            env: 'prod',
+            clientToken: '{{ $.dd_rum_client_token }}',
+            applicationId: '{{ $.dd_rum_application_id }}',
+            site: '{{ $.dd_rum_site }}',
+            service: '{{ $.dd_rum_service }}',
+            env: '{{ $.dd_rum_env }}',
             // Specify a version number to identify the deployed version of your application in Datadog
             // version: '1.0.0',
             sessionSampleRate: 100,

@@ -43,17 +43,37 @@ type platformDetails struct {
 }
 
 var (
-	frontendMessage  = strings.TrimSpace(os.Getenv("FRONTEND_MESSAGE"))
-	isCymbalBrand    = "true" == strings.ToLower(os.Getenv("CYMBAL_BRANDING"))
-	assistantEnabled = "true" == strings.ToLower(os.Getenv("ENABLE_ASSISTANT"))
-	allowDDRum       = "true" == strings.ToLower(os.Getenv("ALLOW_DD_RUM"))
-	templates        = template.Must(template.New("").
+	frontendMessage    = strings.TrimSpace(os.Getenv("FRONTEND_MESSAGE"))
+	isCymbalBrand      = "true" == strings.ToLower(os.Getenv("CYMBAL_BRANDING"))
+	assistantEnabled   = "true" == strings.ToLower(os.Getenv("ENABLE_ASSISTANT"))
+	allowDDRum         = "true" == strings.ToLower(os.Getenv("ALLOW_DD_RUM"))
+	ddRumScriptURL     = getenvDefault("DD_RUM_SCRIPT_URL", "https://www.datadoghq-browser-agent.com/us1/v6/datadog-rum.js")
+	ddRumClientToken   = strings.TrimSpace(os.Getenv("DD_RUM_CLIENT_TOKEN"))
+	ddRumApplicationID = strings.TrimSpace(os.Getenv("DD_RUM_APPLICATION_ID"))
+	ddRumSite          = getenvDefault("DD_RUM_SITE", "datadoghq.com")
+	ddRumService       = getenvDefault("DD_RUM_SERVICE", "frontend")
+	ddRumEnv           = getenvDefault("DD_RUM_ENV", "prod")
+	ddRumEnabled       = allowDDRum && ddRumClientToken != "" && ddRumApplicationID != ""
+	templates          = template.Must(template.New("").
 				Funcs(template.FuncMap{
 			"renderMoney":        renderMoney,
 			"renderCurrencyLogo": renderCurrencyLogo,
 		}).ParseGlob("templates/*.html"))
 	plat platformDetails
 )
+
+func init() {
+	if allowDDRum && !ddRumEnabled {
+		logrus.Warn("ALLOW_DD_RUM is set but DD_RUM_CLIENT_TOKEN and/or DD_RUM_APPLICATION_ID are missing; Datadog RUM will not initialize")
+	}
+}
+
+func getenvDefault(key, defaultVal string) string {
+	if v := strings.TrimSpace(os.Getenv(key)); v != "" {
+		return v
+	}
+	return defaultVal
+}
 
 var validEnvs = []string{"local", "gcp", "azure", "aws", "onprem", "alibaba"}
 
@@ -551,22 +571,29 @@ func renderHTTPError(log logrus.FieldLogger, r *http.Request, w http.ResponseWri
 
 func injectCommonTemplateData(r *http.Request, payload map[string]interface{}) map[string]interface{} {
 	data := map[string]interface{}{
-		"session_id":        sessionID(r),
-		"request_id":        r.Context().Value(ctxKeyRequestID{}),
-		"user_currency":     currentCurrency(r),
-		"platform_css":      plat.css,
-		"platform_name":     plat.provider,
-		"is_cymbal_brand":   isCymbalBrand,
-		"assistant_enabled": assistantEnabled,
-		"allow_dd_rum":      allowDDRum,
-		"deploymentDetails": deploymentDetailsMap,
-		"frontendMessage":   frontendMessage,
-		"currentYear":       time.Now().Year(),
-		"baseUrl":           baseUrl,
-		"mw_account_key":    os.Getenv("MW_ACCOUNT_KEY"),
-		"mw_target":         os.Getenv("MW_TARGET"),
-		"mw_project_name":   os.Getenv("MW_PROJECT_NAME"),
-		"mw_service_name":   os.Getenv("MW_SERVICE_NAME"),
+		"session_id":            sessionID(r),
+		"request_id":            r.Context().Value(ctxKeyRequestID{}),
+		"user_currency":         currentCurrency(r),
+		"platform_css":          plat.css,
+		"platform_name":         plat.provider,
+		"is_cymbal_brand":       isCymbalBrand,
+		"assistant_enabled":     assistantEnabled,
+		"allow_dd_rum":          allowDDRum,
+		"dd_rum_enabled":        ddRumEnabled,
+		"dd_rum_script_url":     ddRumScriptURL,
+		"dd_rum_client_token":   ddRumClientToken,
+		"dd_rum_application_id": ddRumApplicationID,
+		"dd_rum_site":           ddRumSite,
+		"dd_rum_service":        ddRumService,
+		"dd_rum_env":            ddRumEnv,
+		"deploymentDetails":     deploymentDetailsMap,
+		"frontendMessage":       frontendMessage,
+		"currentYear":           time.Now().Year(),
+		"baseUrl":               baseUrl,
+		"mw_account_key":        os.Getenv("MW_ACCOUNT_KEY"),
+		"mw_target":             os.Getenv("MW_TARGET"),
+		"mw_project_name":       os.Getenv("MW_PROJECT_NAME"),
+		"mw_service_name":       os.Getenv("MW_SERVICE_NAME"),
 	}
 
 	for k, v := range payload {

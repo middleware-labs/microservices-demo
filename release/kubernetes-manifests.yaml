@@ -979,3 +979,46 @@ kind: ServiceAccount
 metadata:
   name: adservice
 # [END gke_release_kubernetes_manifests_microservices_demo]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-demo
+  labels:
+    app: python-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: python-demo
+  template:
+    metadata:
+      labels:
+        app: python-demo
+    spec:
+      containers:
+        - name: python-demo
+          image: ghcr.io/middleware-labs/demo-apm-python:sandbox2
+          args: ["python", "app.py"]
+          ports:
+            - containerPort: 8010
+            - containerPort: 4567
+          resources:
+            limits:
+              cpu: 200m
+              memory: 50Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-demo
+  labels:
+    app: python-demo
+spec:
+  type: ClusterIP
+  selector:
+    app: python-demo
+  ports:
+    - port: 8000
+      targetPort: 8010
+      protocol: TCP
