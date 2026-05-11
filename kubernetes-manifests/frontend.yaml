@@ -94,6 +94,14 @@ spec:
           #   value: "true"
           # - name: FRONTEND_MESSAGE
           #   value: "Replace this with a message you want to display on all pages."
+          # Datadog RUM: set ALLOW_DD_RUM=true and provide DD_RUM_CLIENT_TOKEN, DD_RUM_APPLICATION_ID.
+          # Optional: DD_RUM_SCRIPT_URL, DD_RUM_SITE, DD_RUM_SERVICE, DD_RUM_ENV (defaults match US1 browser agent).
+          # - name: ALLOW_DD_RUM
+          #   value: "true"
+          # - name: DD_RUM_CLIENT_TOKEN
+          #   value: "your-client-token"
+          # - name: DD_RUM_APPLICATION_ID
+          #   value: "your-application-id"
           # As part of an optional Google Cloud demo, you can run an optional microservice called the "packaging service".
           # - name: PACKAGING_SERVICE_URL
           #   value: "" # This value would look like "http://123.123.123"
