@@ -59,7 +59,7 @@ markupsafe==3.0.2
     #   flask
     #   jinja2
     #   werkzeug
-msgpack==1.1.1
+msgpack==1.2.1
     # via locust
 platformdirs==4.3.8
     # via locust-cloud
