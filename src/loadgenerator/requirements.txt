@@ -65,7 +65,7 @@ platformdirs==4.3.8
     # via locust-cloud
 psutil==7.0.0
     # via locust
-python-engineio==4.12.2
+python-engineio==4.13.2
     # via
     #   locust-cloud
     #   python-socketio
